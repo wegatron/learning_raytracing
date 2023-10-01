@@ -3,9 +3,11 @@
 #include "hittable.h"
 #include "vec3.h"
 
+#include "material.h"
+
 class sphere : public hittable {
   public:
-    sphere(point3 _center, double _radius) : center(_center), radius(_radius) {}
+    sphere(point3 _center, double _radius, const std::shared_ptr<material> &m) : center(_center), radius(_radius), mat(m) {}
 
     bool hit(const ray& r, double ray_tmin, double ray_tmax, hit_record& rec) const override {
         vec3 oc = r.origin() - center;
@@ -30,11 +32,13 @@ class sphere : public hittable {
         rec.normal = (rec.p - center) / radius;
 
         vec3 outward_normal = (rec.p - center) / radius;
-        rec.set_face_normal(r, outward_normal);        
+        rec.set_face_normal(r, outward_normal);
+        rec.mat = mat;
         return true;
     }
 
   private:
     point3 center;
     double radius;
+    std::shared_ptr<material> mat;
 };

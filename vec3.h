@@ -141,7 +141,8 @@ inline vec3 random_on_hemisphere(const vec3& normal) {
 }
 
 inline vec3 reflect(const vec3& v, const vec3& n) {
-    return v - 2*dot(v,n)*n;
+    return 2*n + v;
+    //return v - 2*dot(v,n)*n;
 }
 
 inline vec3 refract(const vec3& uv, const vec3& n, double etai_over_etat) {

@@ -1,6 +1,9 @@
 #pragma once
 
 #include "ray.h"
+#include <memory>
+
+class material;
 
 class hit_record {
   public:
@@ -8,6 +11,7 @@ class hit_record {
     vec3 normal;
     double t;
     bool front_face;
+    std::shared_ptr<material> mat;
 
     void set_face_normal(const ray& r, const vec3& outward_normal) {
         // Sets the hit record normal vector.
