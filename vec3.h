@@ -112,13 +112,13 @@ inline vec3 unit_vector(vec3 v) {
     return v / v.length();
 }
 
-// inline vec3 random_in_unit_disk() {
-//     while (true) {
-//         auto p = vec3(random_double(-1,1), random_double(-1,1), 0);
-//         if (p.length_squared() < 1)
-//             return p;
-//     }
-// }
+inline vec3 random_in_unit_disk() {
+    while (true) {
+        auto p = vec3(random_double(-1,1), random_double(-1,1), 0);
+        if (p.length_squared() < 1)
+            return p;
+    }
+}
 
 inline vec3 random_in_unit_sphere() {
     while (true) {
@@ -140,9 +140,8 @@ inline vec3 random_on_hemisphere(const vec3& normal) {
         return -on_unit_sphere;
 }
 
-inline vec3 reflect(const vec3& v, const vec3& n) {
-    return 2*n + v;
-    //return v - 2*dot(v,n)*n;
+inline vec3 reflect(const vec3& v, const vec3& n) {    
+    return v - 2*dot(v,n)*n;
 }
 
 inline vec3 refract(const vec3& uv, const vec3& n, double etai_over_etat) {
