@@ -37,9 +37,9 @@ class camera {
                     auto ru = random_double();
                     auto rv = random_double();
                     auto pixel_center = pixel00_loc + (i+ru-0.5) * pixel_delta_u + (j-0.5+rv) * pixel_delta_v;
-                    auto ray_direction = pixel_center - center;
-
-                    auto ray_origin = (defocus_angle <= 0) ? center : defocus_disk_sample();                    
+                    
+                    auto ray_origin = (defocus_angle <= 0) ? center : defocus_disk_sample();
+                    auto ray_direction = pixel_center - ray_origin;
                     ray r(ray_origin, ray_direction);
 
                     pixel_color += ray_color(r, max_depth, world);
@@ -76,7 +76,7 @@ class camera {
         pixel_delta_v = -up * (viewport_height / image_height);
         pixel00_loc = viewport_upper_left + 0.5*(pixel_delta_u + pixel_delta_v);
 
-        auto defocus_radius = focus_dist * tan(pi*defocus_angle/180);
+        auto defocus_radius = focus_dist * tan(pi*defocus_angle/360);
         defocus_disk_u = -defocus_radius * left;
         defocus_disk_v = -defocus_radius * up;
     }
