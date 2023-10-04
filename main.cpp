@@ -5,15 +5,19 @@
 #include "hittable_list.h"
 #include "sphere.h"
 #include "camera.h"
+#include "bvh.h"
 
 #include <iostream>
 
 using namespace std;
 
+const interval interval::empty   (+infinity, -infinity);
+const interval interval::universe(-infinity, +infinity);
+
 int main()
 {
     hittable_list world;
-   auto ground_material = make_shared<lambertian>(color(0.5, 0.5, 0.5));
+    auto ground_material = make_shared<lambertian>(color(0.5, 0.5, 0.5));
     world.add(make_shared<sphere>(point3(0,-1000,0), 1000, ground_material));
 
     for (int a = -11; a < 11; a++) {
@@ -28,7 +32,8 @@ int main()
                     // diffuse
                     auto albedo = color::random() * color::random();
                     sphere_material = make_shared<lambertian>(albedo);
-                    world.add(make_shared<sphere>(center, 0.2, sphere_material));
+                    vec3 speed{0, random_double()*40, 0};
+                    world.add(make_shared<sphere>(center, 0.2, sphere_material, speed));
                 } else if (choose_mat < 0.95) {
                     // metal
                     auto albedo = color::random(0.5, 1);
@@ -53,11 +58,14 @@ int main()
     auto material3 = make_shared<metal>(color(0.7, 0.6, 0.5), 0.0);
     world.add(make_shared<sphere>(point3(4, 1, 0), 1.0, material3));
 
+    world = hittable_list(std::make_shared<bvh_node>(world));
+
     camera cam;
 
+    cam.shutter_time = 0.01;
     cam.aspect_ratio      = 16.0 / 9.0;
-    cam.image_width       = 1200;
-    cam.samples_per_pixel = 500;
+    cam.image_width       = 400;
+    cam.samples_per_pixel = 100;
     cam.max_depth         = 50;
 
     cam.vfov     = 20;

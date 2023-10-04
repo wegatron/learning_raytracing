@@ -23,3 +23,8 @@ inline double random_double(double min, double max) {
     // Returns a random real in [min,max).
     return min + (max-min)*random_double();
 }
+
+inline int random_int(int min, int max)
+{
+    return rand()%(max-min) + min;
+}
