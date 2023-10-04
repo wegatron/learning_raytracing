@@ -50,7 +50,7 @@ public:
 
     bool hit(const ray& r, interval ray_t, hit_record& rec) const override
     {
-        if(!bbox.hit(r, ray_t)) return true;
+        //if(!bbox.hit(r, ray_t)) return false;
         bool hit_left = left->hit(r, ray_t, rec);
         bool hit_right = right->hit(r, interval(hit_left ? rec.t:ray_t.min, ray_t.max), rec);
         return hit_left || hit_right;
