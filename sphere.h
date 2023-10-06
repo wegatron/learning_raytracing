@@ -34,6 +34,12 @@ public:
         else iz = interval(center.z()-radius+_speed.z(), center.z()+radius);
       }
 
+  void get_sphere_uv(const point3 &p, double &u, double &v) const
+  {
+    v = acos(-p.y())/pi;
+    u = (atan2(-p.z(), p.x()) + pi)/(2*pi);
+  }      
+
   bool hit(const ray &r, interval ray_t,
            hit_record &rec) const override {
     point3 cur_center = center + r.time() * speed;
@@ -58,10 +64,10 @@ public:
 
     rec.t = root;
     rec.p = r.at(rec.t);
-    rec.normal = (rec.p - cur_center) / radius;
-
     vec3 outward_normal = (rec.p - cur_center) / radius;
     rec.set_face_normal(r, outward_normal);
+    get_sphere_uv(outward_normal, rec.u, rec.v);
+
     rec.mat = mat;
     return true;
   }

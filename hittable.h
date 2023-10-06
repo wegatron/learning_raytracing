@@ -9,6 +9,7 @@ class material;
 
 class hit_record {
   public:
+    double u, v;
     point3 p;
     vec3 normal;
     double t;

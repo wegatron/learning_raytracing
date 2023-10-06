@@ -4,6 +4,7 @@
 #include "aabb.h"
 #include <vector>
 #include <algorithm>
+#include <functional>
 
 bool box_compare(const std::shared_ptr<hittable> &a, const std::shared_ptr<hittable> &b, int index)
 {
@@ -39,7 +40,6 @@ public:
       }
     } else {
       std::sort(objects.begin() + start, objects.begin() + end, comparator);
-
       auto mid = start + object_span / 2;
       left = std::make_shared<bvh_node>(objects, start, mid);
       right = std::make_shared<bvh_node>(objects, mid, end);
@@ -50,16 +50,16 @@ public:
 
     bool hit(const ray& r, interval ray_t, hit_record& rec) const override
     {
-        //if(!bbox.hit(r, ray_t)) return false;
+        if(!bbox.hit(r, ray_t)) return false;
         bool hit_left = left->hit(r, ray_t, rec);
-        bool hit_right = right->hit(r, interval(hit_left ? rec.t:ray_t.min, ray_t.max), rec);
+        bool hit_right = right->hit(r, interval(ray_t.min, hit_left ? rec.t:ray_t.max), rec);
         return hit_left || hit_right;
     }
 
     aabb bounding_box() const override
     {
         return bbox;
-    }  
+    }
 private:
     std::shared_ptr<hittable> left;
     std::shared_ptr<hittable> right;

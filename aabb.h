@@ -7,6 +7,21 @@ class aabb {
 public:
   interval x, y, z;
 
+  aabb(const point3 &a, const point3 &b)
+  {
+    x.min = a.x();
+    x.max = b.x();
+    if(x.min > x.max) std::swap(x.min, x.max);
+
+    y.min = a.y();
+    y.max = b.y();
+    if(y.min > y.max) std::swap(y.min, y.max);
+
+    z.min = a.z();
+    z.max = b.z();
+    if(z.min > z.max) std::swap(z.min, z.max);
+  }
+
   aabb() {}
 
   aabb(const interval &ix, const interval &iy, const interval &iz)
@@ -34,6 +49,17 @@ public:
     if (index == 1)
       return y;
     return z;
+  }
+
+  aabb pad()
+  {
+      // Return an AABB that has no side narrower than some delta, padding if necessary.
+        double delta = 0.0001;
+        interval new_x = (x.size() >= delta) ? x : x.expand(delta);
+        interval new_y = (y.size() >= delta) ? y : y.expand(delta);
+        interval new_z = (z.size() >= delta) ? z : z.expand(delta);
+
+        return aabb(new_x, new_y, new_z);    
   }
 
   void merge(const aabb &b) {

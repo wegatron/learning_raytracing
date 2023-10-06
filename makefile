@@ -4,6 +4,7 @@
 # 	build/bin/zsw_one > output/image.ppm
 
 run:
-	mkdir -p output
-	cd build_release; make -j
-	build_release/bin/zsw_one > output/image.ppm
+	# mkdir -p output
+	# cmake -S . -B build
+	# cmake --build build
+	build/bin/Debug/zsw_one.exe

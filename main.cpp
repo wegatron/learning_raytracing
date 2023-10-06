@@ -6,6 +6,8 @@
 #include "sphere.h"
 #include "camera.h"
 #include "bvh.h"
+#include "texture.h"
+#include "quad.h"
 
 #include <iostream>
 
@@ -14,10 +16,33 @@ using namespace std;
 const interval interval::empty   (+infinity, -infinity);
 const interval interval::universe(-infinity, +infinity);
 
-int main()
+void earth() {
+    auto earth_texture = make_shared<image_texture>("earthmap.jpg");
+    auto earth_surface = make_shared<lambertian>(earth_texture);
+    auto globe = make_shared<sphere>(point3(0,0,0), 2, earth_surface);
+
+    camera cam;
+
+    cam.aspect_ratio      = 16.0 / 9.0;
+    cam.image_width       = 400;
+    cam.samples_per_pixel = 100;
+    cam.max_depth         = 50;
+
+    cam.vfov     = 20;
+    cam.center = point3(0,0, 12);
+    cam.lookat(point3(0,0,0), vec3(0,1,0));
+
+    cam.defocus_angle = 0;
+
+    cam.render(hittable_list(globe));
+}
+
+void many_balls()
 {
     hittable_list world;
-    auto ground_material = make_shared<lambertian>(color(0.5, 0.5, 0.5));
+    auto checker = make_shared<checker_texture> (0.32, color(.2, .3, .1), color(.9, .9, .9));
+    //auto ground_material = make_shared<lambertian>(color(0.5, 0.5, 0.5));
+    auto ground_material = make_shared<lambertian>(checker);
     world.add(make_shared<sphere>(point3(0,-1000,0), 1000, ground_material));
 
     for (int a = -11; a < 11; a++) {
@@ -64,7 +89,7 @@ int main()
 
     cam.shutter_time = 0.01;
     cam.aspect_ratio      = 16.0 / 9.0;
-    cam.image_width       = 400;
+    cam.image_width       = 100;
     cam.samples_per_pixel = 100;
     cam.max_depth         = 50;
 
@@ -74,36 +99,41 @@ int main()
     cam.defocus_angle = 0.6;
     cam.focus_dist    = 10.0;
 
-    cam.render(*world2);
-    return 0;
+    cam.render(*world2);    
 }
 
 
-// int main() {
-//     // World
+void simple_light()
+{
+    hittable_list world;
 
-//     hittable_list world;
+    auto pertext = make_shared<noise_texture>(4);
+    world.add(make_shared<sphere>(point3(0,-1000,0), 1000, make_shared<lambertian>(pertext)));
+    world.add(make_shared<sphere>(point3(0,2,0), 2, make_shared<lambertian>(pertext)));
 
-//     auto mat_ground = std::make_shared<lambertian>(color(0.8, 0.8, 0.0));
-//     auto mat_center = std::make_shared<lambertian>(color(0.1, 0.2, 0.5));
-//     auto mat_left   = std::make_shared<dielectric>(1.5);
-//     auto mat_right  = std::make_shared<metal>(color(0.8, 0.6, 0.2), 0.0);  
+    auto difflight = make_shared<diffuse_light>(color(4,4,4));
+    world.add(make_shared<quad>(point3(3,1,-2), vec3(2,0,0), vec3(0,2,0), difflight));
 
-//     world.add(std::make_shared<sphere>(point3( 0.0, -100.5, -1.0), 100.0, mat_ground));
-//     world.add(std::make_shared<sphere>(point3( 0.0, 0.0, -1.0),   0.5, mat_center));
-//     world.add(std::make_shared<sphere>(point3(-1.0,    0.0, -1.0),   0.5, mat_left));
-//     world.add(std::make_shared<sphere>(point3(-1.0,    0.0, -1.0),  -0.4, mat_left));
-//     world.add(std::make_shared<sphere>(point3( 1.0,    0.0, -1.0),   0.5, mat_right));
+    camera cam;
 
-//     camera cam;
-//     cam.vfov = 20;
-//     cam.defocus_angle = 10.0;
-//     cam.focus_dist    = 3;    
-//     cam.center = vec3(-2, 2, 1);
-//     cam.lookat(point3(0,0,-1), vec3(0,1,0));
-//     cam.samples_per_pixel = 100;
-//     cam.max_depth = 50;
-//     cam.image_width = 400;
-//     cam.aspect_ratio = 16.0/9.0;
-//     cam.render(world);
-// }
+    cam.aspect_ratio      = 16.0 / 9.0;
+    cam.image_width       = 400;
+    cam.samples_per_pixel = 100;
+    cam.max_depth         = 50;
+    cam.background        = color(0,0,0);
+
+    cam.vfov     = 20;
+    cam.center = point3(26,3,6);
+    cam.lookat(point3(0,2,0), vec3(0,1,0));
+
+    cam.defocus_angle = 0;
+
+    cam.render(world);    
+}
+
+int main()
+{
+    //earth();
+    simple_light();
+    return 0;
+}

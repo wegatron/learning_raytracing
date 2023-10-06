@@ -18,4 +18,6 @@ if (NOT APPLE AND ${CMAKE_CXX_COMPILER} MATCHES "(C|c?)lang")
     add_compile_options(-stdlib=libc++)
 endif()
 
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/stbi)
+
 add_executable(zsw_one main.cpp)

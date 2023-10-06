@@ -5,6 +5,7 @@
 #include "ray.h"
 #include "rtweekend.h"
 #include "interval.h"
+#include <fstream>
 
 class camera {
 public:
@@ -20,6 +21,7 @@ public:
   double vfov{90};
   point3 center{0, 0, 0}; // Camera center
   double shutter_time{0};
+  color background{0,0,0};
 
   void lookat(const point3 &pt, const vec3 &_up) {
     look_dir = unit_vector(pt - center);
@@ -27,7 +29,8 @@ public:
   }
   void render(const hittable &world) {
     initialize();
-    std::cout << "P3\n" << image_width << " " << image_height << "\n255\n";
+    std::ofstream ofs("output/image.ppm");
+    ofs << "P3\n" << image_width << " " << image_height << "\n255\n";
     for (int j = 0; j < image_height; ++j) {
       std::clog << "\rScanlines remaining: " << (image_height - j) << ' '
                 << std::flush;
@@ -50,10 +53,10 @@ public:
           pixel_color += ray_color(r, max_depth, world);
         }
 
-        write_color(std::cout, pixel_color, samples_per_pixel);
+        write_color(ofs, pixel_color, samples_per_pixel);
       }
     }
-
+    ofs.close();
     std::clog << "\rDone.                 \n";
   }
 
@@ -104,14 +107,17 @@ private:
     if (world.hit(r, interval(0.001, infinity), rec)) {
       ray scattered;
       color attenuation;
+      color emitted = rec.mat->emitted(rec.u, rec.v, rec.p);
       if (rec.mat->scatter(r, rec, attenuation, scattered))
-        return attenuation * ray_color(scattered, depth, world);
+        return attenuation * ray_color(scattered, depth, world) + emitted;
       return color(0.0, 0.0, 0.0);
     }
 
+    return background;
     // background color
-    vec3 unit_direction = unit_vector(r.direction());
-    auto a = 0.5 * (unit_direction.y() + 1.0);
-    return (1.0 - a) * color(1.0, 1.0, 1.0) + a * color(0.5, 0.7, 1.0);
+    // if(background != nullptr) return background
+    // vec3 unit_direction = unit_vector(r.direction());
+    // auto a = 0.5 * (unit_direction.y() + 1.0);
+    // return (1.0 - a) * color(1.0, 1.0, 1.0) + a * color(0.5, 0.7, 1.0);
   }
 };
