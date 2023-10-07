@@ -110,7 +110,7 @@ private:
       color emitted = rec.mat->emitted(rec.u, rec.v, rec.p);
       if (rec.mat->scatter(r, rec, attenuation, scattered))
         return attenuation * ray_color(scattered, depth, world) + emitted;
-      return color(0.0, 0.0, 0.0);
+      return emitted;
     }
 
     return background;

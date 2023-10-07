@@ -7,4 +7,4 @@ run:
 	# mkdir -p output
 	# cmake -S . -B build
 	# cmake --build build
-	build/bin/Debug/zsw_one.exe
+	build/bin/Release/zsw_one.exe
