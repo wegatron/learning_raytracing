@@ -51,6 +51,17 @@ public:
     return z;
   }
 
+  aabb operator+(const vec3 &t) const {
+    aabb ret = *this;
+    ret.x.min += t[0];
+    ret.x.max += t[0];
+    ret.y.min += t[1];
+    ret.y.max += t[1];
+    ret.z.min += t[2];
+    ret.z.max += t[2];
+    return ret;
+  }
+
   aabb pad()
   {
       // Return an AABB that has no side narrower than some delta, padding if necessary.

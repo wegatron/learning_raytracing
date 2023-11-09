@@ -9,12 +9,14 @@ class constant_medium : public hittable {
 public:
   constant_medium(std::shared_ptr<hittable> b, double d,
                   std::shared_ptr<texture> a)
-      : boundary(b), neg_inv_density(-1 / d),
-        phase_function(std::make_shared<isotropic>(a)) {}
+      : boundary(b),
+        phase_function(std::make_shared<isotropic>(a)),
+        neg_inv_density(-1 / d) {}
 
   constant_medium(std::shared_ptr<hittable> b, double d, color c)
-      : boundary(b), neg_inv_density(-1 / d),
-        phase_function(std::make_shared<isotropic>(c)) {}
+      : boundary(b), 
+        phase_function(std::make_shared<isotropic>(c)),
+        neg_inv_density(-1 / d) {}
 
   bool hit(const ray &r, interval ray_t, hit_record &rec) const override {
     // todo
