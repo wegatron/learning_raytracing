@@ -95,8 +95,9 @@ class mixture_pdf : public pdf{
       for (size_t i = 0; i < pdf_list.size(); ++i) {
         sum += weights[i] * pdf_list[i]->value(direction);
       }
+      assert(sum >= 0.0);
       return sum;
-    }
+        }
 
     vec3 generate() const override {
       auto r = random_double();

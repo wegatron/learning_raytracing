@@ -120,7 +120,7 @@ private:
       std::initializer_list<double> weights = {0.5, 0.5};
       auto p_mix = std::make_shared<mixture_pdf>(pdfs, weights);
       if (rec.mat->scatter(r, p_mix, rec, attenuation, scattered))
-        attenuation * ray_color(scattered, depth, world, lights) + emitted;
+        return attenuation * ray_color(scattered, depth, world, lights) + emitted;
       return emitted;
     }
 
