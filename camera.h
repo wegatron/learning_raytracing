@@ -1,11 +1,14 @@
 #pragma once
 
+#include <fstream>
+#include <vector>
+
 #include "color.h"
 #include "hittable.h"
+#include "interval.h"
+#include "pdf.h"
 #include "ray.h"
 #include "rtweekend.h"
-#include "interval.h"
-#include <fstream>
 
 class camera {
 public:
@@ -21,13 +24,13 @@ public:
   double vfov{90};
   point3 center{0, 0, 0}; // Camera center
   double shutter_time{0};
-  color background{0,0,0};
+  color background{0, 0, 0};
 
   void lookat(const point3 &pt, const vec3 &_up) {
     look_dir = unit_vector(pt - center);
     up = unit_vector(_up - look_dir * dot(look_dir, _up));
   }
-  void render(const hittable &world) {
+  void render(const hittable &world, const hittable &lights) {
     initialize();
     std::ofstream ofs("output/image.ppm");
     ofs << "P3\n" << image_width << " " << image_height << "\n255\n";
@@ -46,11 +49,11 @@ public:
           auto ray_origin =
               (defocus_angle <= 0) ? center : defocus_disk_sample();
           auto ray_direction = pixel_center - ray_origin;
-          
+
           double delta_time = random_double() * shutter_time;
           ray r(ray_origin, ray_direction, delta_time);
 
-          pixel_color += ray_color(r, max_depth, world);
+          pixel_color += ray_color(r, max_depth, world, lights);
         }
 
         write_color(ofs, pixel_color, samples_per_pixel);
@@ -98,7 +101,8 @@ private:
     return center + (p[0] * defocus_disk_u) + (p[1] * defocus_disk_v);
   }
 
-  color ray_color(const ray &r, int depth, const hittable &world) const {
+  color ray_color(const ray &r, int depth, const hittable &world,
+                  const hittable &lights) const {
     if (--depth == 0) {
       return color(0, 0, 0);
     }
@@ -108,8 +112,15 @@ private:
       ray scattered;
       color attenuation;
       color emitted = rec.mat->emitted(rec.u, rec.v, rec.p);
-      if (rec.mat->scatter(r, rec, attenuation, scattered))
-        return attenuation * ray_color(scattered, depth, world) + emitted;
+
+      // sample pdf
+      std::initializer_list<std::shared_ptr<pdf>> pdfs = {
+          std::make_shared<cosine_pdf>(rec.normal),
+          std::make_shared<hittable_pdf>(lights, rec.p)};
+      std::initializer_list<double> weights = {0.5, 0.5};
+      auto p_mix = std::make_shared<mixture_pdf>(pdfs, weights);
+      if (rec.mat->scatter(r, p_mix, rec, attenuation, scattered))
+        attenuation * ray_color(scattered, depth, world, lights) + emitted;
       return emitted;
     }
 

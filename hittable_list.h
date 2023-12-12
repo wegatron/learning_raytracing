@@ -42,6 +42,13 @@ class hittable_list : public hittable {
         return bbox;
     }
 
+    vec3 random(const vec3 &origin) const override {
+        if (objects.empty()) {
+            return vec3(0,0,0);
+        }
+        return objects[random_int(0, objects.size()-1)]->random(origin);
+    }
+
 private:
     aabb bbox{interval::empty, interval::empty, interval::empty};
 };

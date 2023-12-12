@@ -1,9 +1,10 @@
 #pragma once
 
+#include <algorithm>
 #include "rtweekend.h"
 #include "color.h"
 #include "texture.h"
-#include <algorithm>
+#include "pdf.h"
 
 class hit_record;
 class ray;
@@ -16,7 +17,7 @@ public:
     {
         return color(0,0,0);
     }
-    virtual bool scatter(const ray &in, const hit_record &rec, color &attenuation, ray &scattered) const = 0;
+    virtual bool scatter(const ray &in, const std::shared_ptr<pdf> &sample_pdf, const hit_record &rec, color &attenuation, ray &scattered) const = 0;
 };
 
 class lambertian : public material
@@ -24,13 +25,19 @@ class lambertian : public material
 public:
     lambertian(const std::shared_ptr<texture> &a) : albedo(a) {}
     lambertian(const color &a) : albedo(std::make_shared<solid_color>(a)) {}
-    bool scatter(const ray &in, const hit_record &rec, color &attenuation, ray &scattered) const override
-    {        
+    bool scatter(const ray &in, const std::shared_ptr<pdf> &sample_pdf, const hit_record &rec, color &attenuation, ray &scattered) const override
+    {
         auto scatter_direction = rec.normal + random_unit_vector();
         if(scatter_direction.near_zero())
             scatter_direction = rec.normal;
         scattered = ray(rec.p, scatter_direction, in.time());
         attenuation = albedo->value(rec.u, rec.v, rec.p);
+
+        // auto scatter_direction = sample_pdf->generate();
+        // double pdf_value = sample_pdf->value(scatter_direction);
+        // double scattering_pdf = dot(rec.normal, unit_vector(scatter_direction));
+        // scattered = ray(rec.p, scatter_direction, in.time());
+        // attenuation = albedo->value(rec.u, rec.v, rec.p) * scattering_pdf/pdf_value;        
         return true;
     }
 
@@ -42,7 +49,7 @@ class metal : public material
 {
 public:
     metal(const color &a, const double f) : albedo(a), fuzz(std::clamp(f, 0.0, 1.0)) {}
-    bool scatter(const ray &in, const hit_record &rec, color &attenuation, ray &scattered) const override
+    bool scatter(const ray &in, const std::shared_ptr<pdf> &sample_pdf, const hit_record &rec, color &attenuation, ray &scattered) const override
     {
         auto reflect_direction = reflect(unit_vector(in.direction()), rec.normal);
         reflect_direction = unit_vector(reflect_direction) + fuzz * random_unit_vector();
@@ -60,7 +67,7 @@ class dielectric : public material
 {
 public:
     dielectric(const double ri) : reflection_index(ri) {}
-    bool scatter(const ray &in, const hit_record &rec, color &attenuation, ray &scattered) const override
+    bool scatter(const ray &in, const std::shared_ptr<pdf> &sample_pdf, const hit_record &rec, color &attenuation, ray &scattered) const override
     {
         attenuation = color(1.0, 1.0, 1.0);
         vec3 uin_dir = unit_vector(in.direction());
@@ -88,7 +95,7 @@ public:
     {
         return albedo->value(u, v, p);
     }
-    bool scatter(const ray &in, const hit_record &rec, color &attenuation, ray &scattered) const override
+    bool scatter(const ray &in, const std::shared_ptr<pdf> &sample_pdf, const hit_record &rec, color &attenuation, ray &scattered) const override
     {
         return false;
     }
@@ -101,7 +108,7 @@ class isotropic : public material {
     isotropic(color c) : albedo(make_shared<solid_color>(c)) {}
     isotropic(shared_ptr<texture> a) : albedo(a) {}
 
-    bool scatter(const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered)
+    bool scatter(const ray& r_in, const std::shared_ptr<pdf> &sample_pdf, const hit_record& rec, color& attenuation, ray& scattered)
     const override {
         scattered = ray(rec.p, random_unit_vector(), r_in.time());
         attenuation = albedo->value(rec.u, rec.v, rec.p);

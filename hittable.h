@@ -33,6 +33,16 @@ class hittable {
     virtual bool hit(const ray& r, interval ray_t, hit_record& rec) const = 0;
 
     virtual aabb bounding_box() const = 0;
+
+    virtual double pdf_value(const point3& origin, const vec3 &v) const
+    {
+      return 0.0;    
+    }
+
+    virtual vec3 random(const vec3 &origin) const
+    {
+      return vec3(1,0,0);
+    }
 };
 
 class rotate_y : public hittable {
@@ -40,11 +50,11 @@ class rotate_y : public hittable {
     rotate_y(std::shared_ptr<hittable> p, double angle): ptr(p), sin_theta(sin(angle)), cos_theta(cos(angle))
     {
       bbox = p->bounding_box();
-      float x[4] = {bbox.x.min, bbox.x.min, bbox.x.max, bbox.x.max};
-      float z[4] = {bbox.z.min, bbox.z.max, bbox.z.min, bbox.z.max};
+      double x[4] = {bbox.x.min, bbox.x.min, bbox.x.max, bbox.x.max};
+      double z[4] = {bbox.z.min, bbox.z.max, bbox.z.min, bbox.z.max};
 
-      float max_x = 0, min_x = 0;
-      float max_z = 0, min_z = 0;
+      double max_x = 0, min_x = 0;
+      double max_z = 0, min_z = 0;
       max_x = min_x = cos_theta * x[0] + sin_theta * z[0];
       max_z = min_z = -sin_theta * x[0] + cos_theta * z[0];
 

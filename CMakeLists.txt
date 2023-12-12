@@ -21,3 +21,5 @@ endif()
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/stbi)
 
 add_executable(zsw_one main.cpp)
+
+add_executable(pi pi.cpp)

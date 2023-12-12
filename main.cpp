@@ -35,7 +35,7 @@ void earth() {
 
     cam.defocus_angle = 0;
 
-    cam.render(hittable_list(globe));
+    cam.render(hittable_list(globe), hittable_list());
 }
 
 void many_balls()
@@ -100,7 +100,7 @@ void many_balls()
     cam.defocus_angle = 0.6;
     cam.focus_dist    = 10.0;
 
-    cam.render(*world2);    
+    cam.render(*world2, hittable_list());    
 }
 
 
@@ -114,7 +114,9 @@ void simple_light()
     world.add(make_shared<sphere>(point3(0,2,0), 2, make_shared<lambertian>(pertext)));
 
     auto difflight = make_shared<diffuse_light>(color(4,4,4));
-    world.add(make_shared<quad>(point3(3,1,-2), vec3(2,0,0), vec3(0,2,0), difflight));
+    auto light = make_shared<quad>(point3(3, 1, -2), vec3(2, 0, 0), vec3(0, 2, 0),
+                      difflight);
+    world.add(light);
 
     camera cam;
 
@@ -130,7 +132,7 @@ void simple_light()
 
     cam.defocus_angle = 0;
 
-    cam.render(world);    
+    cam.render(world, *light);
 }
 
 void cornell_box() {
@@ -143,14 +145,15 @@ void cornell_box() {
 
     world.add(make_shared<quad>(point3(555,0,0), vec3(0,555,0), vec3(0,0,555), green));
     world.add(make_shared<quad>(point3(0,0,0), vec3(0,555,0), vec3(0,0,555), red));
-    world.add(make_shared<quad>(point3(343, 554, 332), vec3(-130,0,0), vec3(0,0,-105), light));
+    auto quad_light = make_shared<quad>(point3(343, 554, 332), vec3(-130, 0, 0), vec3(0, 0, -105),
+                      light);
+    world.add(quad_light);
     world.add(make_shared<quad>(point3(0,0,0), vec3(555,0,0), vec3(0,0,555), white));
     world.add(make_shared<quad>(point3(555,555,555), vec3(-555,0,0), vec3(0,0,-555), white));
     world.add(make_shared<quad>(point3(0,0,555), vec3(555,0,0), vec3(0,555,0), white));
 
     world.add(box(point3(130, 0, 65), point3(295, 165, 230), white));
-    world.add(box(point3(265, 0, 295), point3(430, 330, 460), white));    
-    
+    world.add(box(point3(265, 0, 295), point3(430, 330, 460), white));
 
     camera cam;
 
@@ -166,7 +169,7 @@ void cornell_box() {
 
     cam.defocus_angle = 0;
 
-    cam.render(world);
+    cam.render(world, *quad_light);
 }
 
 
@@ -180,7 +183,10 @@ void cornell_smoke() {
 
     world.add(make_shared<quad>(point3(555,0,0), vec3(0,555,0), vec3(0,0,555), green));
     world.add(make_shared<quad>(point3(0,0,0), vec3(0,555,0), vec3(0,0,555), red));
-    world.add(make_shared<quad>(point3(113,554,127), vec3(330,0,0), vec3(0,0,305), light));
+
+    auto quad_light = make_shared<quad>(point3(113, 554, 127), vec3(330, 0, 0),
+                                   vec3(0, 0, 305), light);
+    world.add(quad_light);
     world.add(make_shared<quad>(point3(0,555,0), vec3(555,0,0), vec3(0,0,555), white));
     world.add(make_shared<quad>(point3(0,0,0), vec3(555,0,0), vec3(0,0,555), white));
     world.add(make_shared<quad>(point3(0,0,555), vec3(555,0,0), vec3(0,555,0), white));
@@ -209,13 +215,13 @@ void cornell_smoke() {
     cam.lookat(point3(278, 278, 0), vec3(0,1,0));
     cam.defocus_angle = 0;
 
-    cam.render(world);
+    cam.render(world, *quad_light);
 }
 
 int main()
 {
     //earth();
-    //cornell_box();
-    cornell_smoke();
+    cornell_box();
+    //cornell_smoke();
     return 0;
 }

@@ -65,6 +65,20 @@ class quad : public hittable {
         return true;
     }
 
+    double pdf_value(const point3& origin, const vec3 &v) const override {
+      hit_record rec;
+      if(!hit(ray(origin, v), interval(0.001, infinity), rec))
+      {
+        return 0;
+      }
+      auto area = cross(u, v).length_squared();
+      return rec.t * rec.t / (dot(v, normal) * area);
+    }  
+
+    vec3 random(const vec3 &origin) const override {
+        auto random_point = Q + random_double() * u + random_double() * v;
+        return random_point - origin;
+    }
   private:
     point3 Q;
     vec3 u, v;
