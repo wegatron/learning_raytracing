@@ -97,7 +97,7 @@ class mixture_pdf : public pdf{
       }
       assert(sum >= 0.0);
       return sum;
-        }
+    }
 
     vec3 generate() const override {
       auto r = random_double();

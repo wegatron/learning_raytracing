@@ -13,7 +13,7 @@ class quad : public hittable {
         normal = unit_vector(n);
         D = dot(normal, Q);
         w = n / dot(n,n);
-
+        area = n.length();
         set_bounding_box();
     }
 
@@ -66,14 +66,15 @@ class quad : public hittable {
     }
 
     double pdf_value(const point3& origin, const vec3 &dir) const override {
-      hit_record rec;
-      if(!hit(ray(origin, dir), interval(0.001, infinity), rec))
-      {
-        return 0;
-      }
-      auto area = cross(u, v).length();
-      return rec.t * rec.t / (dot(dir, normal) * area);
-    }  
+        hit_record rec;
+        if (!this->hit(ray(origin, dir), interval(0.001, infinity), rec))
+            return 0;
+
+        auto distance_squared = rec.t * rec.t * dir.length_squared();
+        auto cosine = fabs(dot(dir, rec.normal) / dir.length());
+
+        return distance_squared / (cosine * area);
+    }
 
     vec3 random(const vec3 &origin) const override {
         auto random_point = Q + random_double() * u + random_double() * v;
@@ -86,6 +87,7 @@ class quad : public hittable {
     aabb bbox;
     vec3 normal;
     double D;
+    double area;
     vec3 w;
 };
 
