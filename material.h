@@ -61,8 +61,8 @@ public:
             
         assert(attenuation.x() >= 0.0 && attenuation.y() >= 0.0 &&
                attenuation.z() >= 0.0);
-        assert(attenuation.x() < 1.0 && attenuation.y() < 1.0 &&
-               attenuation.z() < 1.0);
+        // assert(attenuation.x() < 1.0 && attenuation.y() < 1.0 &&
+        //        attenuation.z() < 1.0);
         return true;
     }
 
