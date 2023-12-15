@@ -14,7 +14,7 @@ public:
         interval(center.y()-radius, center.y()+radius),
         interval(center.z()-radius, center.z()+radius)),
       mat(m) {
-      }
+   }
 
   sphere(point3 _center, double _radius, const std::shared_ptr<material> &m,
          const vec3 &_speed)
@@ -75,6 +75,35 @@ public:
   aabb bounding_box() const override
   {
     return bbox;
+  }
+
+  double pdf_value(const point3& origin, const vec3 &v) const override
+  {
+    hit_record rec;
+    if(!this->hit(ray(origin, v), interval::empty, rec))
+      return 0.0;
+
+    auto cos_theta_max = sqrt(1 - radius*radius/(center-origin).length_squared());
+    auto solid_angle = 2*pi*(1-cos_theta_max);
+
+    return 1.0/solid_angle;
+  }
+
+  vec3 random(const vec3 &origin) const override
+  {
+    vec3 direction = center - origin;    
+    double phi = 2*pi*random_double();    
+    auto cos_theta_max = sqrt(1 - radius*radius/(center-origin).length_squared());
+    double r = random_double();
+    
+    double z = 1 + r*(cos_theta_max-1); // cos_theta
+    auto sin_theta = sqrt(1-z*z);
+    double x = cos(phi)*sin_theta;
+    double y = sin(phi)*sin_theta;
+    
+    onb uvw;
+    uvw.build_from_w(direction);
+    return uvw.local(x, y, z);
   }
 
 private:

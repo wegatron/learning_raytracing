@@ -97,16 +97,30 @@ public:
         attenuation = color(1.0, 1.0, 1.0);
         vec3 uin_dir = unit_vector(in.direction());
         double ir = rec.front_face ? 1.0/reflection_index : reflection_index;
+
         // judge recract or reflect
         double ct = dot(uin_dir, rec.normal);
         double st = sqrt(1-ct*ct);
-        bool can_recract = st * ir < 1;
-        vec3 dir = can_recract ? refract(uin_dir, rec.normal, ir) : reflect(uin_dir, rec.normal);        
+        bool cannot_recract = st * ir > 1;
+        if(cannot_recract || random_double() < reflectance(ct, ir))
+        {
+            vec3 dir = reflect(uin_dir, rec.normal);
+            scattered = ray(rec.p, dir, in.time());
+            return true;
+        }
+        vec3 dir = refract(uin_dir, rec.normal, ir);
         scattered = ray(rec.p, dir, in.time());
         return true;
     }
 private:
     double reflection_index{1.0};
+
+    static double reflectance(double cosine, double ref_idx) {
+        // Use Schlick's approximation for reflectance.
+        auto r0 = (1-ref_idx) / (1+ref_idx);
+        r0 = r0*r0;
+        return r0 + (1-r0)*pow((1 - cosine),5);
+    }    
 };
 
 class diffuse_light : public material

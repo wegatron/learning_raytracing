@@ -146,24 +146,29 @@ void cornell_box() {
 
     world.add(make_shared<quad>(point3(555,0,0), vec3(0,555,0), vec3(0,0,555), green));
     world.add(make_shared<quad>(point3(0,0,0), vec3(0,555,0), vec3(0,0,555), red));
-    auto quad_light = make_shared<quad>(point3(343, 554, 332), vec3(-130, 0, 0), vec3(0, 0, -105),
-                      light);
-    world.add(quad_light);
     world.add(make_shared<quad>(point3(0,0,0), vec3(555,0,0), vec3(0,0,555), white));
     world.add(make_shared<quad>(point3(555,555,555), vec3(-555,0,0), vec3(0,0,-555), white));
     world.add(make_shared<quad>(point3(0,0,555), vec3(555,0,0), vec3(0,555,0), white));
 
 
-    shared_ptr<hittable> box1 = box(point3(0,0,0), point3(165,330,165), specular_white);
+    shared_ptr<hittable> box1 = box(point3(0,0,0), point3(165,330,165), white);
     box1 = make_shared<rotate_y>(box1, 15/180.0*pi);
     box1 = make_shared<translate>(box1, vec3(265,0,295));
-
-    shared_ptr<hittable> box2 = box(point3(0,0,0), point3(165,165,165), white);
-    box2 = make_shared<rotate_y>(box2, -18/180.0*pi);
-    box2 = make_shared<translate>(box2, vec3(130,0,65));
-
     world.add(box1);
-    world.add(box2);
+
+    // shared_ptr<hittable> box2 = box(point3(0,0,0), point3(165,165,165), white);
+    // box2 = make_shared<rotate_y>(box2, -18/180.0*pi);
+    // box2 = make_shared<translate>(box2, vec3(130,0,65));    
+    // world.add(box2);
+
+    auto quad_light = make_shared<quad>(point3(343, 554, 332), vec3(-130, 0, 0), vec3(0, 0, -105),
+                      light);
+    world.add(quad_light);    
+    
+    // Glass Sphere
+    auto glass = make_shared<dielectric>(1.5);
+    auto glass_sphere = make_shared<sphere>(point3(190, 90, 190), 90, glass);
+    world.add(glass_sphere);
 
     camera cam;
 
@@ -179,7 +184,10 @@ void cornell_box() {
 
     cam.defocus_angle = 0;
 
-    cam.render(world, *quad_light);
+    hittable_list sample_hittables;
+    sample_hittables.add(quad_light);
+    sample_hittables.add(glass_sphere);
+    cam.render(world, sample_hittables);
 }
 
 

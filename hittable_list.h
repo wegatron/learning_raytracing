@@ -42,6 +42,17 @@ class hittable_list : public hittable {
         return bbox;
     }
 
+    double pdf_value(const point3& origin, const vec3 &v) const override
+    {
+      auto weight = 1.0/objects.size();
+      auto sum = 0.0;
+
+      for(const auto& object : objects)
+        sum += weight * object->pdf_value(origin, v);
+
+      return sum;
+    }
+
     vec3 random(const vec3 &origin) const override {
         if (objects.empty()) {
             return vec3(0,0,0);
