@@ -99,7 +99,7 @@ public:
         double ir = rec.front_face ? 1.0/reflection_index : reflection_index;
 
         // judge recract or reflect
-        double ct = dot(uin_dir, rec.normal);
+        double ct = fabs(dot(uin_dir, rec.normal));
         double st = sqrt(1-ct*ct);
         bool cannot_recract = st * ir > 1;
         if(cannot_recract || random_double() < reflectance(ct, ir))
