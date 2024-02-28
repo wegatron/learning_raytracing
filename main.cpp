@@ -9,7 +9,7 @@
 #include "texture.h"
 #include "quad.h"
 #include "constant_medium.h"
-
+#include <chrono>
 #include <iostream>
 
 using namespace std;
@@ -35,7 +35,7 @@ void earth() {
 
     cam.defocus_angle = 0;
 
-    cam.render(hittable_list(globe), hittable_list());
+    cam.render(hittable_list(globe), nullptr);
 }
 
 void many_balls()
@@ -87,10 +87,10 @@ void many_balls()
     auto world2 = std::make_shared<bvh_node>(world);
 
     camera cam;
-
+    
     cam.shutter_time = 0.01;
     cam.aspect_ratio      = 16.0 / 9.0;
-    cam.image_width       = 100;
+    cam.image_width       = 400;
     cam.samples_per_pixel = 100;
     cam.max_depth         = 50;
 
@@ -100,9 +100,78 @@ void many_balls()
     cam.defocus_angle = 0.6;
     cam.focus_dist    = 10.0;
 
-    cam.render(*world2, hittable_list());    
+    cam.render(*world2, nullptr);    
 }
 
+
+void random_spheres() {
+    hittable_list world;
+
+    auto checker = make_shared<checker_texture>(0.32, color(.2, .3, .1), color(.9, .9, .9));
+    world.add(make_shared<sphere>(point3(0,-1000,0), 1000, make_shared<lambertian>(checker)));
+
+    for (int a = -11; a < 11; a++) {
+        for (int b = -11; b < 11; b++) {
+            auto choose_mat = random_double();
+            point3 center(a + 0.9*random_double(), 0.2, b + 0.9*random_double());
+
+            if ((center - point3(4, 0.2, 0)).length() > 0.9) {
+                shared_ptr<material> sphere_material;
+
+                if (choose_mat < 0.8) {
+                    // diffuse
+                    auto albedo = color::random() * color::random();
+                    sphere_material = make_shared<lambertian>(albedo);
+
+                    //auto center2 = center + vec3(0, random_double(0,.5), 0);
+                    //world.add(make_shared<sphere>(center, center2, 0.2, sphere_material));
+
+                    //vec3 speed{0, random_double()*40, 0};
+                    world.add(make_shared<sphere>(center, 0.2, sphere_material));
+                } else if (choose_mat < 0.95) {
+                    // metal
+                    auto albedo = color::random(0.5, 1);
+                    auto fuzz = random_double(0, 0.5);
+                    sphere_material = make_shared<metal>(albedo, fuzz);
+                    world.add(make_shared<sphere>(center, 0.2, sphere_material));
+                } else {
+                    // glass
+                    sphere_material = make_shared<dielectric>(1.5);
+                    world.add(make_shared<sphere>(center, 0.2, sphere_material));
+                }
+            }
+        }
+    }
+
+    auto material1 = make_shared<dielectric>(1.5);
+    world.add(make_shared<sphere>(point3(0, 1, 0), 1.0, material1));
+
+    auto material2 = make_shared<lambertian>(color(0.4, 0.2, 0.1));
+    world.add(make_shared<sphere>(point3(-4, 1, 0), 1.0, material2));
+
+    auto material3 = make_shared<metal>(color(0.7, 0.6, 0.5), 0.0);
+    world.add(make_shared<sphere>(point3(4, 1, 0), 1.0, material3));
+
+    auto world2 = make_shared<bvh_node>(world);
+
+    camera cam;
+
+    cam.background        = color(0.70, 0.80, 1.00);     
+    
+    cam.shutter_time = 0.01;
+    cam.aspect_ratio      = 16.0 / 9.0;
+    cam.image_width       = 400;
+    cam.samples_per_pixel = 100;
+    cam.max_depth         = 50;
+
+    cam.vfov     = 20;
+    cam.center = point3(13,2,3);
+    cam.lookat(point3(0,0,0), vec3(0,1,0));
+    cam.defocus_angle = 0.6;
+    cam.focus_dist    = 10.0;
+
+    cam.render(*world2, nullptr);
+}
 
 void simple_light()
 {
@@ -132,7 +201,7 @@ void simple_light()
 
     cam.defocus_angle = 0;
 
-    cam.render(world, *light);
+    cam.render(world, light.get());
 }
 
 void cornell_box() {
@@ -187,7 +256,7 @@ void cornell_box() {
     hittable_list sample_hittables;
     sample_hittables.add(quad_light);
     sample_hittables.add(glass_sphere);
-    cam.render(world, sample_hittables);
+    cam.render(world, &sample_hittables);
 }
 
 
@@ -233,13 +302,20 @@ void cornell_smoke() {
     cam.lookat(point3(278, 278, 0), vec3(0,1,0));
     cam.defocus_angle = 0;
 
-    cam.render(world, *quad_light);
+    cam.render(world, quad_light.get());
 }
 
 int main()
 {
     //earth();
-    cornell_box();
+    //cornell_box();
     //cornell_smoke();
+    auto tp0 = std::chrono::high_resolution_clock::now();
+    random_spheres();
+    std::clog << "Time cost:"
+            << std::chrono::duration_cast<std::chrono::milliseconds>(
+                   std::chrono::high_resolution_clock::now() - tp0)
+                   .count()
+            << "ms" << std::endl;    
     return 0;
 }

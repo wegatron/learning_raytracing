@@ -30,7 +30,7 @@ public:
     look_dir = unit_vector(pt - center);
     up = unit_vector(_up - look_dir * dot(look_dir, _up));
   }
-  void render(const hittable &world, const hittable &lights) {
+  void render(const hittable &world, const hittable * lights) {
     initialize();
     std::ofstream ofs("output/image.ppm");
     ofs << "P3\n" << image_width << " " << image_height << "\n255\n";
@@ -102,7 +102,7 @@ private:
   }
 
   color ray_color(const ray &r, int depth, const hittable &world,
-                  const hittable &lights) const {
+                  const hittable * lights) const {
     if (--depth == 0) {
       return color(0, 0, 0);
     }
@@ -114,10 +114,17 @@ private:
       color emitted = rec.mat->emitted(rec.u, rec.v, rec.p);
 
       // sample pdf
-      std::initializer_list<std::shared_ptr<pdf>> pdfs = {
-          std::make_shared<cosine_pdf>(rec.normal),
-          std::make_shared<hittable_pdf>(lights, rec.p)};
       std::initializer_list<double> weights = {0.5, 0.5};
+      std::initializer_list<std::shared_ptr<pdf>> pdfs;
+      if (lights != nullptr) {
+        pdfs = {
+            std::make_shared<cosine_pdf>(rec.normal),
+            std::make_shared<hittable_pdf>(*lights, rec.p)};
+      } else {
+        pdfs = {
+            std::make_shared<cosine_pdf>(rec.normal)};
+      }
+
       auto p_mix = std::make_shared<mixture_pdf>(pdfs, weights);
       if (rec.mat->scatter(r, p_mix, rec, attenuation, scattered))
         return attenuation * ray_color(scattered, depth, world, lights) + emitted;

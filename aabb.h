@@ -62,6 +62,12 @@ public:
     return ret;
   }
 
+  const interval& axis(int n) const {
+      if (n == 1) return y;
+      if (n == 2) return z;
+      return x;
+  }  
+
   aabb pad()
   {
       // Return an AABB that has no side narrower than some delta, padding if necessary.
