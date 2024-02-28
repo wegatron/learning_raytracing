@@ -115,17 +115,19 @@ private:
 
       // sample pdf
       std::initializer_list<double> weights = {0.5, 0.5};
-      std::initializer_list<std::shared_ptr<pdf>> pdfs;
+      std::shared_ptr<mixture_pdf> p_mix;
+      
       if (lights != nullptr) {
-        pdfs = {
+        std::initializer_list<std::shared_ptr<pdf>> pdfs = {
             std::make_shared<cosine_pdf>(rec.normal),
             std::make_shared<hittable_pdf>(*lights, rec.p)};
+        p_mix = std::make_shared<mixture_pdf>(pdfs, weights);
       } else {
-        pdfs = {
+        std::initializer_list<std::shared_ptr<pdf>> pdfs = {
             std::make_shared<cosine_pdf>(rec.normal)};
+        p_mix = std::make_shared<mixture_pdf>(pdfs, weights);
       }
 
-      auto p_mix = std::make_shared<mixture_pdf>(pdfs, weights);
       if (rec.mat->scatter(r, p_mix, rec, attenuation, scattered))
         return attenuation * ray_color(scattered, depth, world, lights) + emitted;
       return emitted;
