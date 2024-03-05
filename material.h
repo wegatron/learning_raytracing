@@ -39,28 +39,28 @@ public:
     }    
     bool scatter(const ray &in, const std::shared_ptr<pdf> &sample_pdf, const hit_record &rec, color &attenuation, ray &scattered) const override
     {
-        // auto scatter_direction = rec.normal + random_unit_vector();
-        // if(scatter_direction.near_zero())
-        //     scatter_direction = rec.normal;
-        // scattered = ray(rec.p, scatter_direction, in.time());
-        // attenuation = albedo->value(rec.u, rec.v, rec.p);
+        auto scatter_direction = rec.normal + random_unit_vector();
+        if(scatter_direction.near_zero())
+            scatter_direction = rec.normal;
+        scattered = ray(rec.p, scatter_direction, in.time());
+        attenuation = albedo->value(rec.u, rec.v, rec.p);
 
-        auto scatter_direction = sample_pdf->generate();
-        double pdf_value = sample_pdf->value(scatter_direction);
+        // auto scatter_direction = sample_pdf->generate();
+        // double pdf_value = sample_pdf->value(scatter_direction);
 
-        // if(pdf_value <= 0.0)
-        // {
-        //     std::cout << "negative attenuation" << std::endl;
-        //     auto aa = sample_pdf->value(scatter_direction);
-        // }
+        // // if(pdf_value <= 0.0)
+        // // {
+        // //     std::cout << "negative attenuation" << std::endl;
+        // //     auto aa = sample_pdf->value(scatter_direction);
+        // // }
 
         
-        scattered = ray(rec.p, scatter_direction, in.time());
-        double spdf = scattering_pdf(in, rec, scattered);
-        attenuation = albedo->value(rec.u, rec.v, rec.p) * spdf/pdf_value;
+        // scattered = ray(rec.p, scatter_direction, in.time());
+        // double spdf = scattering_pdf(in, rec, scattered);
+        // attenuation = albedo->value(rec.u, rec.v, rec.p) * spdf/pdf_value;
             
-        assert(attenuation.x() >= 0.0 && attenuation.y() >= 0.0 &&
-               attenuation.z() >= 0.0);
+        // assert(attenuation.x() >= 0.0 && attenuation.y() >= 0.0 &&
+        //        attenuation.z() >= 0.0);
         // assert(attenuation.x() < 1.0 && attenuation.y() < 1.0 &&
         //        attenuation.z() < 1.0);
         return true;
