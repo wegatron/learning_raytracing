@@ -26,5 +26,5 @@ inline double random_double(double min, double max) {
 
 inline int random_int(int min, int max)
 {
-    return rand()%(max-min) + min;
+    return rand()%(max-min+1) + min;
 }
