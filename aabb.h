@@ -89,31 +89,23 @@ public:
     z.max = std::max(b.z.max, z.max);
   }
 
-  bool hit(const ray &r, interval ray_t) const {
-    vec3 invd(1.0 / r.direction()[0], 1.0 / r.direction()[1],
-              1.0 / r.direction()[2]);
+  bool hit(const ray& r, interval ray_t) const {
+    for (int a = 0; a < 3; a++) {
+        auto invD = 1 / r.direction()[a];
+        auto orig = r.origin()[a];
 
-    double tx0 = (x.min - r.origin()[0]) * invd[0];
-    double tx1 = (x.max - r.origin()[0]) * invd[0];
-    if (tx0 > tx1)
-      std::swap(tx0, tx1);
-    if (tx0 > ray_t.max || tx1 < ray_t.min)
-      return false;
+        auto t0 = (axis(a).min - orig) * invD;
+        auto t1 = (axis(a).max - orig) * invD;
 
-    double ty0 = (y.min - r.origin()[1]) * invd[1];
-    double ty1 = (y.max - r.origin()[1]) * invd[1];
-    if (ty0 > ty1)
-      std::swap(ty0, ty1);
-    if (ty0 > ray_t.max || ty1 < ray_t.min)
-      return false;
+        if (invD < 0)
+            std::swap(t0, t1);
 
-    double tz0 = (z.min - r.origin()[2]) * invd[2];
-    double tz1 = (z.max - r.origin()[2]) * invd[2];
-    if (tz0 > tz1)
-      std::swap(tz0, tz1);
-    if (tz0 > ray_t.max || tz1 < ray_t.min)
-      return false;
+        if (t0 > ray_t.min) ray_t.min = t0;
+        if (t1 < ray_t.max) ray_t.max = t1;
 
-    return true;
+        if (ray_t.max <= ray_t.min)
+            return false;
+    }
+      return true;
   }
 };
